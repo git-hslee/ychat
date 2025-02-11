@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>회원가입</title>
+    <style>
+        /* 기본 스타일 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #74ebd5, #acb6e5);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* 100% 화면 높이 */
+            animation: gradientBG 6s infinite alternate;
+            overflow-y: auto; /* 세로 스크롤 허용 */
+        }
+
+        @keyframes gradientBG {
+            0% { background: linear-gradient(135deg, #74ebd5, #acb6e5); }
+            100% { background: linear-gradient(135deg, #acb6e5, #74ebd5); }
+        }
+
+        /* 컨테이너 */
+        .container {
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 400px;
+            transform: scale(1);
+            animation: popIn 0.5s ease-in-out;
+            margin: 20px; /* 상하 여백 */
+            box-sizing: border-box;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 대표 이미지 */
+        .site-image {
+            display: block;
+            margin: 0 auto 20px;
+            max-width: 30%; /* 최대 너비 */
+            max-height: 70px; /* 최대 높이 */
+            object-fit: contain; /* 이미지 비율 유지 */
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* 입력 필드 */
+        input {
+            margin: 10px auto;
+            padding: 12px 15px;
+            border: 1px solid #cccccc;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            width: calc(100% - 30px);
+            display: block;
+        }
+
+        input:focus {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+            outline: none;
+        }
+
+        /* 버튼 */
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            width: calc(100% - 30px); /* 버튼도 동일하게 중앙 정렬 */
+            margin: 0 auto;
+            display: block;
+        }
+
+        button:hover {
+            background-color: #45a049;
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        /* 성공/오류 메시지 */
+        .message {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="images/ychat.webp" alt="사이트 대표 이미지" class="site-image">
+        <h2>회원가입</h2>
+        <form id="signup-form">
+            <input type="text" id="id" placeholder="아이디" required>
+            <input type="password" id="password" placeholder="비밀번호" required>
+            <input type="text" id="username" placeholder="이름" required>
+            <input type="text" id="phoneNumber" placeholder="전화번호" required>
+            <input type="text" id="address" placeholder="주소">
+            <button type="submit">가입하기</button>
+        </form>
+        <div class="message success" id="success-message">회원가입 성공!</div>
+        <div class="message error" id="error-message">회원가입 실패!</div>
+    </div>
+
+    <script>
+        const form = document.getElementById("signup-form");
+        const successMessage = document.getElementById("success-message");
+        const errorMessage = document.getElementById("error-message");
+
+		form.addEventListener("submit", async function(event) {
+		    event.preventDefault();
+
+		    const userData = {
+		        id: document.getElementById("id").value,
+		        password: document.getElementById("password").value,
+		        username: document.getElementById("username").value,
+		        phoneNumber: document.getElementById("phoneNumber").value,
+		        address: document.getElementById("address").value
+		    };
+
+		    try {
+		        const response = await fetch("http://localhost:8080/api/users/signup", {
+		            method: "POST",
+		            headers: { "Content-Type": "application/json" },
+		            body: JSON.stringify(userData)
+		        });
+
+		        if (response.ok) {
+		            successMessage.style.display = "block";
+		            errorMessage.style.display = "none";
+		            setTimeout(() => {
+		                window.location.href = "/login.html"; // 로그인 페이지로 이동
+		            }, 2000);
+		        } else if (response.status === 409) { // 중복 아이디 처리
+		            throw new Error("중복된 아이디입니다.");
+		        } else {
+		            throw new Error("회원가입 실패");
+		        }
+		    } catch (error) {
+		        successMessage.style.display = "none";
+		        errorMessage.style.display = "block";
+		        errorMessage.textContent = error.message; // 에러 메시지 표시
+		    }
+		});
+
+    </script>
+</body>
+</html>

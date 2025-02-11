@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/ychat?serverTimezone=Asia/Seoul
+    username: root
+    password: onlyroot
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update  # 자동 테이블 생성 (개발 단계)
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: true
+
+server:
+  error:
+    include-stacktrace: never  # trace 정보 숨기기
