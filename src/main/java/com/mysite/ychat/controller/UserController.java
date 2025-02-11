@@ -1,6 +1,7 @@
 package com.mysite.ychat.controller;
 
 import com.mysite.ychat.domain.User;
+import com.mysite.ychat.config.SecurityConfig;
 import com.mysite.ychat.exception.UserNotFoundException;
 import com.mysite.ychat.repository.UserRepository;
 import org.springframework.web.bind.annotation.*;
@@ -8,26 +9,45 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.dao.DataIntegrityViolationException;
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    // Constructor-based dependency injection
-    public UserController(UserRepository userRepository) {
+    @Autowired //의존성 주입 
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder; 
     }
 
     // Create a new user
     @PostMapping("/signup")
     public ResponseEntity<String> createUser(@RequestBody User user) {
-        if (userRepository.existsById(user.getId())) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 아이디입니다.");
+        /* 기본적인 입력 검증 추가 (비밀번호 최소 길이 확인)
+        if (user.getPassword().length() < 6) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("비밀번호는 최소 6자 이상이어야 합니다.");
         }
-        
+        */
+
+        // 중복 체크 (더 간결하게 작성)
+        if (userRepository.findById(user.getId()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 아이디입니다.");
+        } 
+        if (userRepository.findByUsername(user.getUsername()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 사용자명입니다.");
+        } 
+        if (userRepository.findByPhoneNumber(user.getPhoneNumber()).isPresent()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 전화번호입니다.");
+        }
+
+        // 예외 처리 블록 내부에서 저장 로직 수행 (안정성 증가)
         try {
+            user.setPassword(passwordEncoder.encode(user.getPassword())); // 비밀번호 암호화
             userRepository.save(user);
             return ResponseEntity.ok("회원가입 성공");
         } catch (DataIntegrityViolationException e) {

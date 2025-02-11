@@ -14,7 +14,7 @@ public class User {
     @Column(nullable = false, unique = true)
     private String id; //유저 id
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String username; //유저 이름
 
     @Column(nullable = false)
