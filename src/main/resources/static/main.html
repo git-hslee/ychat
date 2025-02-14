@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>메인 페이지</title>
+</head>
+<body>
+    <h2>환영합니다! 🎉</h2>
+    <p id="user-info">로그인 정보를 불러오는 중...</p>
+    <button id="logout">로그아웃</button>
+
+    <script>
+        // JWT 토큰 가져오기 (로컬 스토리지에서)
+        const token = localStorage.getItem("jwtToken");
+
+        if (!token) {
+            window.location.href = "/login.html"; // 로그인 안 되어 있으면 로그인 페이지로 이동
+        } else {
+            fetch("http://localhost:8080/api/users/me", {
+                method: "GET",
+                headers: { "Authorization": `Bearer ${token}` }
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("user-info").textContent = `안녕하세요, ${data.username}님!`;
+            })
+            .catch(error => {
+                console.error("사용자 정보 로드 실패:", error);
+                localStorage.removeItem("jwtToken");
+                window.location.href = "/login.html"; // 토큰 오류 시 로그인 페이지로 이동
+            });
+        }
+
+        // 로그아웃 버튼 클릭 시 JWT 삭제 후 로그인 페이지로 이동
+        document.getElementById("logout").addEventListener("click", function() {
+            localStorage.removeItem("jwtToken");
+            window.location.href = "/login.html";
+        });
+    </script>
+</body>
+</html>

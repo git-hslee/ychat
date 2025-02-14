@@ -62,4 +62,23 @@ public class UserController {
         return userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
+    
+    @PostMapping("/login")
+    public ResponseEntity<String> loginUser(@RequestBody User user) {
+        Optional<User> existingUser = userRepository.findById(user.getId());
+
+        if (existingUser.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 아이디입니다.");
+        }
+
+        User foundUser = existingUser.get();
+
+        //  비밀번호 비교 (BCrypt 사용)
+        if (!passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 일치하지 않습니다.");
+        }
+
+        return ResponseEntity.ok("로그인 성공");
+    }
+
 }

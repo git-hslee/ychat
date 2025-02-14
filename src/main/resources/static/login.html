@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>로그인</title>
+</head>
+<body>
+    <h2>로그인</h2>
+    <form id="login-form">
+        <input type="text" id="id" placeholder="아이디" required>
+        <input type="password" id="password" placeholder="비밀번호" required>
+        <button type="submit">로그인</button>
+    </form>
+    <div id="message"></div>
+
+    <script>
+        document.getElementById("login-form").addEventListener("submit", async function(event) {
+            event.preventDefault();
+
+            const userData = {
+                id: document.getElementById("id").value,
+                password: document.getElementById("password").value
+            };
+
+            try {
+                const response = await fetch("http://localhost:8080/api/users/login", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(userData)
+                });
+
+                const message = document.getElementById("message");
+
+                if (response.ok) {
+                    message.style.color = "green";
+                    message.textContent = "로그인 성공!";
+                    setTimeout(() => window.location.href = "/main.html", 2000); // 로그인 후 이동
+                } else {
+                    const errorText = await response.text();
+                    message.style.color = "red";
+                    message.textContent = errorText; // 서버에서 보낸 오류 메시지 표시
+                }
+            } catch (error) {
+                console.error("로그인 요청 실패:", error);
+            }
+        });
+    </script>
+</body>
+</html>
