@@ -5,34 +5,47 @@
     <title>메인 페이지</title>
 </head>
 <body>
-    <h2>환영합니다! 🎉</h2>
+    <h2>환영합니다!</h2>
     <p id="user-info">로그인 정보를 불러오는 중...</p>
     <button id="logout">로그아웃</button>
 
     <script>
-        // JWT 토큰 가져오기 (로컬 스토리지에서)
+        // 로컬 스토리지에서 JWT 토큰 가져오기
         const token = localStorage.getItem("jwtToken");
 
+        // 토큰이 없으면 로그인 페이지로 리디렉션
         if (!token) {
-            window.location.href = "/login.html"; // 로그인 안 되어 있으면 로그인 페이지로 이동
+            //window.location.href = "/login.html";
+			alert("토큰이 없습니다!");
         } else {
+            // 사용자 정보를 가져오기 위한 API 호출
             fetch("http://localhost:8080/api/users/me", {
                 method: "GET",
-                headers: { "Authorization": `Bearer ${token}` }
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
             })
-            .then(response => response.json())
+            .then(response => {
+                // 응답 상태가 ok가 아니면 에러 발생
+                if (!response.ok) {
+                    throw new Error("토큰 검증 실패 또는 사용자 정보 조회 실패");
+                }
+                return response.json();
+            })
             .then(data => {
+                // 받아온 사용자 정보로 페이지 업데이트
                 document.getElementById("user-info").textContent = `안녕하세요, ${data.username}님!`;
             })
             .catch(error => {
                 console.error("사용자 정보 로드 실패:", error);
+                // 토큰 오류 시 토큰 삭제 후 로그인 페이지로 이동
                 localStorage.removeItem("jwtToken");
-                window.location.href = "/login.html"; // 토큰 오류 시 로그인 페이지로 이동
+                //window.location.href = "/login.html";
             });
         }
 
-        // 로그아웃 버튼 클릭 시 JWT 삭제 후 로그인 페이지로 이동
-        document.getElementById("logout").addEventListener("click", function() {
+        // 로그아웃 버튼 클릭 시 이벤트 처리
+        document.getElementById("logout").addEventListener("click", () => {
             localStorage.removeItem("jwtToken");
             window.location.href = "/login.html";
         });

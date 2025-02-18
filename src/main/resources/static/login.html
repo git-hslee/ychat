@@ -25,6 +25,7 @@
             try {
                 const response = await fetch("http://localhost:8080/api/users/login", {
                     method: "POST",
+                    mode: "cors", // 수정: CORS 모드를 명시적으로 설정
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify(userData)
                 });
@@ -32,13 +33,22 @@
                 const message = document.getElementById("message");
 
                 if (response.ok) {
+                    // 응답 헤더에서 Authorization 토큰 추출
+                    const authHeader = response.headers.get("Authorization");
+                    if (authHeader) {
+                        // "Bearer " 접두어 제거 후 토큰 저장
+                        localStorage.setItem("jwtToken", authHeader.substring(7));
+                        console.log("토큰 저장됨:", localStorage.getItem("jwtToken")); // 디버깅 로그
+                    } else {
+                        console.error("응답에 Authorization 헤더가 없습니다.");
+                    }
                     message.style.color = "green";
                     message.textContent = "로그인 성공!";
-                    setTimeout(() => window.location.href = "/main.html", 2000); // 로그인 후 이동
+                    setTimeout(() => window.location.href = "/main.html", 2000);
                 } else {
                     const errorText = await response.text();
                     message.style.color = "red";
-                    message.textContent = errorText; // 서버에서 보낸 오류 메시지 표시
+                    message.textContent = errorText;
                 }
             } catch (error) {
                 console.error("로그인 요청 실패:", error);

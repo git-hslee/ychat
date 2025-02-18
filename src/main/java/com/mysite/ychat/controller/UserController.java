@@ -1,6 +1,9 @@
 package com.mysite.ychat.controller;
 
 import com.mysite.ychat.domain.User;
+import com.mysite.ychat.dto.UserDto;
+import org.springframework.security.core.Authentication;
+import com.mysite.ychat.util.JwtUtil;
 import com.mysite.ychat.config.SecurityConfig;
 import com.mysite.ychat.exception.UserNotFoundException;
 import com.mysite.ychat.repository.UserRepository;
@@ -18,11 +21,13 @@ public class UserController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil;
 
     @Autowired //의존성 주입 
-    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+    public UserController(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder; 
+        this.jwtUtil = jwtUtil;
     }
 
     // Create a new user
@@ -55,7 +60,6 @@ public class UserController {
         }
     }
 
-
     // Get user by ID
     @GetMapping("/{id}")
     public User getUser(@PathVariable("id") String id) {
@@ -63,6 +67,7 @@ public class UserController {
                 .orElseThrow(() -> new UserNotFoundException("User not found"));
     }
     
+    //로그인 & jwt토큰 발급
     @PostMapping("/login")
     public ResponseEntity<String> loginUser(@RequestBody User user) {
         Optional<User> existingUser = userRepository.findById(user.getId());
@@ -78,7 +83,27 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 일치하지 않습니다.");
         }
 
-        return ResponseEntity.ok("로그인 성공");
+        // 🔹 JWT 토큰 생성
+        String token = jwtUtil.generateToken(foundUser.getId());
+
+        // 🔹 JWT 토큰을 포함한 응답 반환
+        return ResponseEntity.ok().header("Authorization", "Bearer " + token).body("로그인 성공");
     }
+    
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentUser(Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+        // SecurityContext에 저장된 사용자 정보를 이용해 사용자 정보를 반환
+        String userId = authentication.getName();
+        // 예: User 정보를 조회한 후 DTO로 반환
+        User user = userRepository.findById(userId).orElse(null);
+        if(user == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+        }
+        return ResponseEntity.ok(new UserDto(user));
+    }
+
 
 }
