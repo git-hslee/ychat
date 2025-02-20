@@ -157,7 +157,7 @@
 		    };
 
 		    try {
-		        const response = await fetch("http://localhost:8080/api/users/signup", {
+		        const response = await fetch("http://localhost:8080/api/public/users/signup", {
 		            method: "POST",
 		            headers: { "Content-Type": "application/json" },
 		            body: JSON.stringify(userData)
@@ -169,7 +169,7 @@
 		            successMessage.style.display = "block";
 		            errorMessage.style.display = "none";
 		            setTimeout(() => {
-		                window.location.href = "/login.html"; // 로그인 페이지로 이동
+		                window.location.href = "/public/login.html"; // 로그인 페이지로 이동
 		            }, 2000);
 		        } else {
 		            throw new Error(responseText); // 서버에서 받은 메시지를 그대로 표시

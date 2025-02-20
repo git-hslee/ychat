@@ -16,7 +16,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/api/public/users")
 public class UserController {
 
     private final UserRepository userRepository;
@@ -39,7 +39,7 @@ public class UserController {
         }
         */
 
-        // 중복 체크 (더 간결하게 작성)
+        // 중복 체크
         if (userRepository.findById(user.getId()).isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body("중복된 아이디입니다.");
         } 

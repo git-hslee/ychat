@@ -15,11 +15,11 @@
 
         // 토큰이 없으면 로그인 페이지로 리디렉션
         if (!token) {
-            //window.location.href = "/login.html";
+            window.location.href = "/public/login.html";
 			alert("토큰이 없습니다!");
         } else {
             // 사용자 정보를 가져오기 위한 API 호출
-            fetch("http://localhost:8080/api/users/me", {
+            fetch("http://localhost:8080/api/public/users/me", {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`
@@ -40,14 +40,14 @@
                 console.error("사용자 정보 로드 실패:", error);
                 // 토큰 오류 시 토큰 삭제 후 로그인 페이지로 이동
                 localStorage.removeItem("jwtToken");
-                //window.location.href = "/login.html";
+                window.location.href = "/public/login.html";
             });
         }
 
         // 로그아웃 버튼 클릭 시 이벤트 처리
         document.getElementById("logout").addEventListener("click", () => {
             localStorage.removeItem("jwtToken");
-            window.location.href = "/login.html";
+            window.location.href = "/public/login.html";
         });
     </script>
 </body>

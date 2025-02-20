@@ -23,7 +23,7 @@
             };
 
             try {
-                const response = await fetch("http://localhost:8080/api/users/login", {
+                const response = await fetch("http://localhost:8080/api/public/users/login", {
                     method: "POST",
                     mode: "cors", // 수정: CORS 모드를 명시적으로 설정
                     headers: { "Content-Type": "application/json" },
@@ -38,13 +38,12 @@
                     if (authHeader) {
                         // "Bearer " 접두어 제거 후 토큰 저장
                         localStorage.setItem("jwtToken", authHeader.substring(7));
-                        console.log("토큰 저장됨:", localStorage.getItem("jwtToken")); // 디버깅 로그
                     } else {
                         console.error("응답에 Authorization 헤더가 없습니다.");
                     }
                     message.style.color = "green";
                     message.textContent = "로그인 성공!";
-                    setTimeout(() => window.location.href = "/main.html", 2000);
+                    setTimeout(() => window.location.href = "/public/main.html", 2000);
                 } else {
                     const errorText = await response.text();
                     message.style.color = "red";

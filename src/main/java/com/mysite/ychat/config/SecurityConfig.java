@@ -35,14 +35,14 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .securityMatcher("/**") // 모든 경로에 보안 정책 적용
-            .csrf(csrf -> csrf.disable())
-            // 수정: CORS 활성화 및 커스텀 설정 적용
+            .csrf(csrf -> csrf.disable()) //csrf 비활성화
+            // CORS 활성화 및 커스텀 설정 적용
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             // 세션을 사용하지 않도록 STATELESS 설정 추가
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/users/signup", "/api/users/login", "/login.html", "/signup.html", "/main.html").permitAll()
-                .anyRequest().authenticated()
+                .requestMatchers("/api/public/**", "/public/**").permitAll()
+                .anyRequest().authenticated() //다른 api 요청들은 인증을 받아야함
             )
             .formLogin().disable()
             .logout(logout -> logout.logoutSuccessUrl("/").permitAll())
@@ -54,12 +54,12 @@ public class SecurityConfig {
     // CorsConfigurationSource Bean 설정: CORS 관련 설정을 지정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues();
+        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues(); //기본값 허용
         configuration.addAllowedOriginPattern("*"); // 모든 origin 허용
         configuration.addAllowedMethod("*");        // 모든 HTTP 메소드 허용
         configuration.addAllowedHeader("*");        // 모든 헤더 허용
-        configuration.setAllowCredentials(true);
-        configuration.addExposedHeader("Authorization"); // 수정: 클라이언트가 Authorization 헤더를 읽을 수 있도록 노출
+        configuration.setAllowCredentials(true); //쿠기 허용
+        configuration.addExposedHeader("Authorization"); // 클라이언트가 Authorization 헤더를 읽을 수 있도록 노출
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
