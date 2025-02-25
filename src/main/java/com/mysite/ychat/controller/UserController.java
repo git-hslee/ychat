@@ -1,5 +1,7 @@
 package com.mysite.ychat.controller;
 
+import java.util.Map;
+import java.util.HashMap;
 import com.mysite.ychat.domain.User;
 import com.mysite.ychat.dto.UserDto;
 import org.springframework.security.core.Authentication;
@@ -69,26 +71,35 @@ public class UserController {
     
     //로그인 & jwt토큰 발급
     @PostMapping("/login")
-    public ResponseEntity<String> loginUser(@RequestBody User user) {
+    public ResponseEntity<Map<String, String>> loginUser(@RequestBody User user) {
         Optional<User> existingUser = userRepository.findById(user.getId());
 
         if (existingUser.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("존재하지 않는 아이디입니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "존재하지 않는 아이디입니다."));
         }
 
         User foundUser = existingUser.get();
 
-        //  비밀번호 비교 (BCrypt 사용)
+        // 비밀번호 비교 (BCrypt 사용)
         if (!passwordEncoder.matches(user.getPassword(), foundUser.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("비밀번호가 일치하지 않습니다.");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("message", "비밀번호가 일치하지 않습니다."));
         }
 
         // 🔹 JWT 토큰 생성
         String token = jwtUtil.generateToken(foundUser.getId());
 
-        // 🔹 JWT 토큰을 포함한 응답 반환
-        return ResponseEntity.ok().header("Authorization", "Bearer " + token).body("로그인 성공");
+        // 🔹 JSON 응답 반환 (메시지 + 토큰 포함)
+        Map<String, String> responseBody = new HashMap<>();
+        responseBody.put("message", "로그인 성공");
+        responseBody.put("token", token);
+
+        return ResponseEntity.ok()
+                .header("Authorization", "Bearer " + token) // 여전히 헤더에 토큰 포함
+                .body(responseBody);
     }
+
     
     @GetMapping("/me")
     public ResponseEntity<?> getCurrentUser(Authentication authentication) {

@@ -1,0 +1,130 @@
+/* 전체 화면 스타일 */
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #74ebd5, #acb6e5);
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh; /* 100% 화면 높이 */
+    animation: gradientBG 6s infinite alternate;
+    overflow-y: auto; /* 세로 스크롤 허용 */
+}
+
+@keyframes gradientBG {
+    0% { background: linear-gradient(135deg, #74ebd5, #acb6e5); }
+    100% { background: linear-gradient(135deg, #acb6e5, #74ebd5); }
+}
+
+/* 회원가입 컨테이너 */
+.register-container {
+    background: #ffffff;
+    padding: 30px 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    width: 100%;
+    max-width: 400px;
+    transform: scale(1);
+    animation: popIn 0.5s ease-in-out;
+    margin: 20px; /* 상하 여백 */
+    box-sizing: border-box;
+    text-align: center;
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* 사이트 대표 이미지 */
+.site-image {
+    display: block;
+    margin: 0 auto 20px;
+    max-width: 30%;
+    max-height: 70px;
+    object-fit: contain;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+/* 제목 스타일 */
+.register-container h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 24px;
+}
+
+/* 입력 필드 스타일 */
+.register-container input {
+    margin: 10px auto;
+    padding: 12px 15px;
+    border: 1px solid #cccccc;
+    border-radius: 6px;
+    font-size: 16px;
+    transition: border-color 0.3s, box-shadow 0.3s;
+    width: calc(100% - 30px);
+    display: block;
+    background-color: #f9f9f9;
+}
+
+.register-container input:focus {
+    border-color: #4CAF50;
+    box-shadow: 0 4px 8px rgba(76, 175, 80, 0.2);
+    outline: none;
+}
+
+/* 버튼 스타일 */
+.register-container button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    width: calc(100% - 30px);
+    margin: 0 auto;
+    display: block;
+}
+
+.register-container button:hover {
+    background-color: #45a049;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.register-container button:active {
+    transform: translateY(1px);
+}
+
+/* 성공/오류 메시지 */
+.message {
+    margin-top: 15px;
+    padding: 10px;
+    border-radius: 6px;
+    text-align: center;
+    font-size: 14px;
+    display: block;  /* ✅ 기존 display: none; 제거 */
+    opacity: 1;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.message.success {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.message.error {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* ✅ 애니메이션 추가: 메시지가 사라질 때 */
+.hidden {
+    opacity: 0;
+    transition: opacity 0.5s ease-in-out;
+}
+

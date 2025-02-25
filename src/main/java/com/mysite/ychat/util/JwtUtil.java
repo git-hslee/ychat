@@ -13,7 +13,7 @@ import java.util.Date;
 @Component
 public class JwtUtil {
     private static final String SECRET_KEY = "yourSecretKeyyourSecretKeyyourSecretKeyyourSecretKey"; // 🔹 최소 32바이트 필요
-    private static final long EXPIRATION_TIME = 1000 * 60 * 60; // 🔹 1시간 유효
+    private static final long EXPIRATION_TIME = 1000 * 60 * 60 * 6; // 🔹 6시간 유효
 
     // 🔹 HMAC SHA-256 키 생성
     private Key getSigningKey() {
@@ -45,13 +45,13 @@ public class JwtUtil {
         return extractClaims(token).getSubject(); // 🔹 subject(사용자 ID) 반환
     }
 
-    // 🔹 토큰 유효성 체크
-    public boolean validateToken(String token) {
+ // 🔹 토큰유효성 검사 userId(Subject) 반환
+    public String validateToken(String token) {
         try {
-            extractClaims(token); // 🔹 유효한지 확인 (파싱 가능한지 체크)
-            return true;
+            Claims claims = extractClaims(token); // 🔹 토큰에서 Claims 추출
+            return claims.getSubject(); // 🔹 Subject 값(userId) 반환
         } catch (Exception e) {
-            return false;
+            return null; // 🔹 유효하지 않은 토큰일 경우 null 반환
         }
     }
 }

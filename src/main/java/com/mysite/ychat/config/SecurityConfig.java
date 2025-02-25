@@ -1,9 +1,10 @@
 package com.mysite.ychat.config;
 
-import com.mysite.ychat.util.JwtUtil; // JWT 유틸 추가
-import com.mysite.ychat.filter.JwtAuthenticationFilter; // JWT 인증 필터 추가
+import com.mysite.ychat.util.JwtUtil;
+import com.mysite.ychat.filter.JwtAuthenticationFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,13 +14,12 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import java.util.List;
 
 @Configuration
 public class SecurityConfig {
 
-    private final JwtUtil jwtUtil; // JWT 유틸 주입
+    private final JwtUtil jwtUtil;
 
     public SecurityConfig(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
@@ -30,36 +30,31 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    // SecurityFilterChain 설정
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .securityMatcher("/**") // 모든 경로에 보안 정책 적용
-            .csrf(csrf -> csrf.disable()) //csrf 비활성화
-            // CORS 활성화 및 커스텀 설정 적용
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // 세션을 사용하지 않도록 STATELESS 설정 추가
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .csrf(csrf -> csrf.disable()) // CSRF 보호 비활성화 (JWT 사용 시 필요)
+            .cors(cors -> cors.configurationSource(corsConfigurationSource())) // CORS 설정 적용
+            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 사용 X
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/public/**", "/public/**").permitAll()
-                .anyRequest().authenticated() //다른 api 요청들은 인증을 받아야함
+                .requestMatchers("/api/public/**").permitAll() // 공개 API 경로 허용
+                .anyRequest().authenticated() // 나머지 요청은 인증 필요
             )
-            .formLogin().disable()
-            .logout(logout -> logout.logoutSuccessUrl("/").permitAll())
-            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class);
+            .logout(logout -> logout.disable()) // JWT 기반 인증이므로 Spring Security의 기본 로그아웃 비활성화
+            .addFilterBefore(new JwtAuthenticationFilter(jwtUtil), UsernamePasswordAuthenticationFilter.class); // JWT 필터 추가
 
         return http.build();
     }
 
-    // CorsConfigurationSource Bean 설정: CORS 관련 설정을 지정
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration().applyPermitDefaultValues(); //기본값 허용
-        configuration.addAllowedOriginPattern("*"); // 모든 origin 허용
-        configuration.addAllowedMethod("*");        // 모든 HTTP 메소드 허용
-        configuration.addAllowedHeader("*");        // 모든 헤더 허용
-        configuration.setAllowCredentials(true); //쿠기 허용
-        configuration.addExposedHeader("Authorization"); // 클라이언트가 Authorization 헤더를 읽을 수 있도록 노출
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(List.of("http://localhost:3000")); // React 앱의 Origin만 허용
+        configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE")); // 필요한 HTTP 메소드만 허용
+        configuration.setAllowedHeaders(List.of("Authorization", "Content-Type")); // 필요한 헤더만 허용
+        configuration.setAllowCredentials(true); // 인증 정보를 포함한 요청 허용
+        configuration.setExposedHeaders(List.of("Authorization")); // 클라이언트가 Authorization 헤더 접근 가능
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
